@@ -1,0 +1,113 @@
+/* src/index.css */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: #e0e0e0;
+  margin: 0;
+}
+
+.navbar {
+  background: rgba(26, 26, 46, 0.95) !important;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.navbar-brand {
+  font-weight: 700;
+  color: #00ddeb !important;
+}
+
+.nav-link {
+  color: #e0e0e0 !important;
+  transition: color 0.3s ease;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: #00ff85 !important;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.05);
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(8px);
+  transition: transform 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+.btn-primary {
+  background: linear-gradient(45deg, #00ddeb, #00ff85);
+  border: none;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(45deg, #00b4d8, #00cc66);
+  box-shadow: 0 0 15px rgba(0, 255, 133, 0.5);
+}
+
+.btn-success {
+  background: linear-gradient(45deg, #00ff85, #00ddeb);
+  border: none;
+}
+
+.btn-success:hover {
+  background: linear-gradient(45deg, #00cc66, #00b4d8);
+  box-shadow: 0 0 15px rgba(0, 255, 133, 0.5);
+}
+
+.btn-danger {
+  background: linear-gradient(45deg, #ff2e63, #ff577f);
+  border: none;
+}
+
+.btn-danger:hover {
+  background: linear-gradient(45deg, #cc244f, #cc4565);
+  box-shadow: 0 0 15px rgba(255, 46, 99, 0.5);
+}
+
+.form-control,
+.form-select {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #e0e0e0;
+  border-radius: 8px;
+}
+
+.form-control:focus,
+.form-select:focus {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: #00ddeb;
+  box-shadow: 0 0 10px rgba(0, 221, 235, 0.5);
+}
+
+.alert-info {
+  background: rgba(0, 221, 235, 0.2);
+  color: #e0e0e0;
+  border-color: #00ddeb;
+}
+
+.badge {
+  background: #ff2e63 !important;
+}
+
+.notification-dropdown {
+  background: rgba(26, 26, 46, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.save-btn {}
+
+.profile-margin {
+  margin-top: 288px;
+}

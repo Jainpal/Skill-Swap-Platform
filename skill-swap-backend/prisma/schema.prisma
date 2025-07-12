@@ -1,0 +1,265 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  //output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  location     String?
+  profilePhoto String?  @db.Text // Changed to Text to store base64 image data
+  isPublic     Boolean  @default(true)
+  availability String   @default("Available") // Available, Busy, Away, Weekends, Evenings
+  role         UserRole @default(USER)
+  isActive     Boolean  @default(true) // For admin to ban users
+  bio          String?  // User bio/description
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  lastActive   DateTime @default(now())
+  
+  // Relations
+  skills               Skill[]
+  sentSwapRequests     SwapRequest[]     @relation("SenderRequests")
+  receivedSwapRequests SwapRequest[]     @relation("ReceiverRequests")
+  givenFeedback        Feedback[]        @relation("FeedbackGiver")
+  receivedFeedback     Feedback[]        @relation("FeedbackReceiver")
+  reportsMade          Report[]          @relation("ReportMaker")
+  reportsReceived      Report[]          @relation("ReportedUser")
+  readMessages         UserMessage[]
+  notifications        Notification[]    // User's notifications
+  
+  @@map("users")
+}
+
+// Skill model
+model Skill {
+  id          String      @id @default(cuid())
+  userId      String
+  name        String      // e.g., "Photoshop", "Excel", "Guitar"
+  description String?     // Detailed description of the skill
+  type        SkillType   // OFFERED or WANTED
+  level       SkillLevel? // BEGINNER, INTERMEDIATE, ADVANCED, EXPERT
+  isApproved  Boolean     @default(true) // For admin moderation
+  
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  // Relations
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reports Report[]
+  
+  @@map("skills")
+  @@index([userId])
+  @@index([type])
+  @@index([name])
+  @@index([isApproved])
+}
+
+// SwapRequest model
+model SwapRequest {
+  id              String            @id @default(cuid())
+  senderId        String
+  receiverId      String
+  skillOffered    String            // The skill sender is offering
+  skillRequested  String            // The skill sender wants to learn
+  message         String?           // Optional message from sender
+  status          SwapRequestStatus @default(PENDING)
+  completedAt     DateTime?         // When the swap was completed
+  
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  // Relations
+  sender   User       @relation("SenderRequests", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User       @relation("ReceiverRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+  feedback Feedback?
+  
+  @@map("swap_requests")
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([status])
+}
+
+// Feedback model - for ratings after swap completion
+model Feedback {
+  id            String  @id @default(cuid())
+  swapRequestId String  @unique
+  giverId       String  // User giving the feedback
+  receiverId    String  // User receiving the feedback
+  rating        Int     // 1-5 star rating
+  comment       String? // Optional written feedback
+  
+  createdAt     DateTime @default(now())
+  
+  // Relations
+  giver       User        @relation("FeedbackGiver", fields: [giverId], references: [id], onDelete: Cascade)
+  receiver    User        @relation("FeedbackReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  swapRequest SwapRequest @relation(fields: [swapRequestId], references: [id], onDelete: Cascade)
+  
+  @@map("feedback")
+  @@index([giverId])
+  @@index([receiverId])
+  @@index([rating])
+}
+
+// Report model - for reporting inappropriate content or users
+model Report {
+  id          String     @id @default(cuid())
+  reporterId  String     // User making the report
+  reportedUserId String? // User being reported (optional)
+  skillId     String?    // Skill being reported (optional)
+  reason      String     // Reason for report
+  description String?    // Additional details
+  status      ReportStatus @default(PENDING)
+  adminNotes  String?    // Admin notes on the report
+  
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  
+  // Relations
+  reporter     User  @relation("ReportMaker", fields: [reporterId], references: [id], onDelete: Cascade)
+  reportedUser User? @relation("ReportedUser", fields: [reportedUserId], references: [id], onDelete: Cascade)
+  skill        Skill? @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  
+  @@map("reports")
+  @@index([reporterId])
+  @@index([reportedUserId])
+  @@index([status])
+}
+
+// Platform Message model - for admin announcements
+model PlatformMessage {
+  id          String              @id @default(cuid())
+  title       String
+  content     String
+  type        MessageType         @default(INFO)
+  isActive    Boolean             @default(true)
+  priority    MessagePriority     @default(NORMAL)
+  
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  expiresAt   DateTime?           // Optional expiration date
+  
+  // Relations
+  readBy      UserMessage[]
+  
+  @@map("platform_messages")
+  @@index([isActive])
+  @@index([type])
+}
+
+// Notification model - for real-time user notifications
+model Notification {
+  id          String           @id @default(cuid())
+  userId      String           // User receiving the notification
+  type        NotificationType
+  title       String
+  message     String
+  isRead      Boolean          @default(false)
+  data        Json?            // Additional data (swap ID, user info, etc.)
+  
+  createdAt   DateTime         @default(now())
+  readAt      DateTime?
+  
+  // Relations
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("notifications")
+  @@index([userId])
+  @@index([isRead])
+  @@index([type])
+  @@index([createdAt])
+}
+
+// Junction table for tracking which users have read which messages
+model UserMessage {
+  id        String   @id @default(cuid())
+  userId    String
+  messageId String
+  readAt    DateTime @default(now())
+  
+  // Relations
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message PlatformMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, messageId])
+  @@map("user_messages")
+}
+
+// Enums
+enum UserRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum SkillType {
+  OFFERED
+  WANTED
+}
+
+enum SkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum SwapRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  COMPLETED
+  CANCELLED
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  RESOLVED
+  DISMISSED
+}
+
+enum MessageType {
+  INFO
+  WARNING
+  UPDATE
+  MAINTENANCE
+  ANNOUNCEMENT
+}
+
+enum MessagePriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum NotificationType {
+  SWAP_REQUEST_RECEIVED
+  SWAP_REQUEST_ACCEPTED
+  SWAP_REQUEST_REJECTED
+  SWAP_REQUEST_CANCELLED
+  SWAP_COMPLETED
+  FEEDBACK_RECEIVED
+  SKILL_APPROVED
+  SKILL_REJECTED
+  PLATFORM_MESSAGE
+  SYSTEM_ALERT
+}
+
