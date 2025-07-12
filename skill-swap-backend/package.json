@@ -1,0 +1,47 @@
+{
+  "name": "skill-swap-backend",
+  "version": "1.0.0",
+  "description": "Backend for Skill Swap platform",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "db:migrate": "npx prisma migrate dev",
+    "db:generate": "npx prisma generate",
+    "db:push": "npx prisma db push",
+    "db:studio": "npx prisma studio",
+    "test": "node test-api.js",
+    "test:install": "npm install axios socket.io-client",
+    "test:validation": "node test-validation.js",
+    "test:websocket": "node test-websocket.js",
+    "test:all": "npm run test && npm run test:validation && npm run test:websocket",
+    "demo": "node demo.js",
+    "setup": "node setup.js",
+    "full-test": "npm run test:install && npm run test:all"
+  },
+  "keywords": [
+    "skill-swap",
+    "express",
+    "nodejs"
+  ],
+  "author": "Your Team",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.10.0",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "express-validator": "^7.0.1",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "socket.io": "^4.7.2",
+    "socket.io-client": "^4.8.1"
+  },
+  "devDependencies": {
+    "@prisma/client": "^6.11.1",
+    "nodemon": "^3.0.1",
+    "prisma": "^6.11.1"
+  }
+}
